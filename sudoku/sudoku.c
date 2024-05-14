@@ -3,10 +3,10 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define SIZE 9
-#define NSDK 5
+#define SIZE 9                                                          //size of table
+#define NSDK 5                                                          //number of possible sudokus in sudoku.txt
 
-#define RESET        "\x1b[0m"
+#define RESET        "\x1b[0m"                                          //various prompt colors
 
 #define BLACK        "\x1b[30m"
 #define RED          "\x1b[31m"
@@ -17,14 +17,14 @@
 #define CYAN         "\x1b[36m"
 #define WHITE        "\x1b[37m"
 
-char game[SIZE][SIZE];
-char sdk[SIZE][SIZE];
+char game[SIZE][SIZE];                                                  //game table
+char sdk[SIZE][SIZE];                                                   //logic game table
 
-int empty_cells = 0;
+int empty_cells = 0;                                                    //self explanatory
 
-void init();
-void print();
-bool check();
+void init();                                                            //initialize game variables
+void print();                                                           //prints the game table (and gui of the game)
+bool check();                                                           //check if at the end of the game
 
 int main(int argc, char const *argv[])
 {
@@ -33,9 +33,9 @@ int main(int argc, char const *argv[])
     init();
     bool running = true;
     bool win = false;
-    int x, y, val;
+    int x, y, val;                                                      //input x, y and value to store in the grid
 
-    while (running)
+    while (running)                                                     //game loop
     {
         print();
         do{
@@ -43,32 +43,30 @@ int main(int argc, char const *argv[])
             scanf("%d %d %d", &x, &y, &val);
             if(sdk[y - 1][x - 1] == 'X' || y < 1 || y > 9 || x < 1 || x > 9 || val < 1 || val > 9)
                 printf("\nError! Invalid input!\n");
-        }while(sdk[y - 1][x - 1] == 'X' || y < 1 || y > 9 || x < 1 || x > 9 || val < 1 || val > 9);
+        }while(sdk[y - 1][x - 1] == 'X' || y < 1 || y > 9 || x < 1 || x > 9 || val < 1 || val > 9); //check for input mistakes
         
-        if(sdk[y - 1][x - 1] == 'O' && game[y - 1][x - 1] == '0')
+        if(sdk[y - 1][x - 1] == 'O' && game[y - 1][x - 1] == '0')   //if the input is "new" then decrease empty cells variable
             empty_cells--;
         
-        game[y - 1][x - 1] = val + '0';
-
-        printf("\nEmpty Cells: %d\n", empty_cells);
+        game[y - 1][x - 1] = val + '0';                             //store value in the grid
         
-        if(empty_cells == 0)
+        if(empty_cells == 0)                                        //if all cells are been filled then stop game loop and check if the player won
         {
             running = false;
             win = check();
         }
-    }
+    }                                                               //game loop end
     
-    if(win)
+    if(win)                                                         //if the player won send good message, otherwise "bad" message
         printf("\nGood Job! You Won!\n");
     else
         printf("\nDamn, You Lost! Better Luck Next Time!\n");
     return 0;
 }
 
-void init()
-{
-    FILE *f;
+void init()                                                                 //reads from sudoku.txt a random row that contains a sudoku
+{                                                                           //then it stores it on the game table and then initializes the logic table          
+    FILE *f;                                                                //file pointer
 
     int row = rand() % NSDK;
     int count = 0;
@@ -76,7 +74,7 @@ void init()
     bool found = false;
     char sudoku[500];
 
-    f = fopen("sudoku.txt", "r");
+    f = fopen("sudoku.txt", "r");                                           //open file
 
     do
     {
@@ -85,10 +83,10 @@ void init()
             found = true;
         else
             count++;
-    } while (found == false);
+    } while (found == false);                                               //loop that gets the wanted row determined by the random function
     
 
-    for(int i = 0; i < SIZE; i++)
+    for(int i = 0; i < SIZE; i++)                                           //game and logic grid and empty cells var initialization loop
     {
         for(int j = 0; j < SIZE; j++)
         {
@@ -104,10 +102,10 @@ void init()
         }
     }
 
-    fclose(f);
+    fclose(f);                                                              //close file
 }
 
-void print()
+void print()                                                                //game gui print
 {
     int i, j;
     printf(YELLOW "    1  2  3   4  5  6   7  8  9\n");
@@ -131,27 +129,27 @@ void print()
     }
 }
 
-bool check()
+bool check()                                                                    //for each cell checks for duplicates in its row, column and inner grid
 {
-    for(int i = 0; i < SIZE; i++)
+    for(int i = 0; i < SIZE; i++)                                               //i for cells in the y axis
     {
-        for(int j = 0; j < SIZE; j++)
+        for(int j = 0; j < SIZE; j++)                                           //j for cells in the x axis
         {
-            for(int k = 0; k < SIZE; k++)
+            for(int k = 0; k < SIZE; k++)                                       //k to check rows and columns
             {
                 if((game[k][j] == game[i][j] && k != i) || (game[i][k] == game[i][j] && k != j))
                     return false;
             }
-            for(int k = i / 3 * 3; k < i / 3 * 3 + 3; k++)
+            for(int k = i / 3 * 3; k < i / 3 * 3 + 3; k++)                      //k and j to do an inner loop inside the inner grid of the cell
             {
                 for(int x = j / 3 * 3; x < j / 3 * 3; x++)
                 {
                     if(game[k][x] == game[i][j] && k != i && x != j)
                         return false;
                 }
-            }
-        }
+            }                                                                   //if two equal cells in different positions where found
+        }                                                                       //the function would have already returned false (meaning the use didnt win)
     }
 
-    return true;
+    return true;                                                                //otherwise the function returns true
 }
